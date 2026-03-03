@@ -571,16 +571,16 @@ function listenTransaksi() {
 async function fbAddTransaksi(payload) {
   payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
   payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-  return await addDoc(collection(db, 'transaksi'), payload);
+  return await db.collection('transaksi').add(payload);
 }
 
 async function fbUpdateTransaksi(id, payload) {
   payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-  return await updateDoc(doc(db, 'transaksi', id), payload);
+  return await db.collection('transaksi').doc(id).update(payload);
 }
 
 async function fbDeleteTransaksi(id) {
-  return await deleteDoc(doc(db, 'transaksi', id));
+  return await db.collection('transaksi').doc(id).delete();
 }
 
 function setSyncBadge(loading) {
