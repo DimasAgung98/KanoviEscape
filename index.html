@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanovi Escape | Rekap Penjualan</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f13;--surface:#18181f;--surface2:#22222c;--surface3:#2c2c3a;--border:#2e2e3e;--text:#f0f0f5;--muted:#7a7a9a;--accent-in:#00e5a0;--accent-out:#ff5c7a;--accent-blue:#6c8dff;--accent-yellow:#ffd166;--card-radius:16px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+.logo-text{font-family:var(--font-head);font-size:22px;font-weight:800;letter-spacing:-.5px}
+.logo-text span{color:var(--accent-in)}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase}
+.nav{padding:16px 12px;flex:1;overflow-y:auto}
+.nav-group-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:8px 12px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(0,229,160,.12);color:var(--accent-in)}
+.nav-item .icon{font-size:18px;width:22px;text-align:center}
+.sidebar-bottom{padding:16px 12px;border-top:1px solid var(--border)}
+.main{margin-left:240px;flex:1;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--font-head);font-size:18px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.today-badge{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--muted)}
+.today-badge span{color:var(--accent-yellow);font-weight:600}
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px}
+.content{padding:28px}
+.page{display:none}.page.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-radius);padding:22px 24px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.income::before{background:var(--accent-in)}.stat-card.expense::before{background:var(--accent-out)}.stat-card.balance::before{background:var(--accent-blue)}
+.stat-label{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px}
+.stat-value{font-family:var(--font-head);font-size:22px;font-weight:700;line-height:1}
+.stat-value.income{color:var(--accent-in)}.stat-value.expense{color:var(--accent-out)}.stat-value.balance-pos{color:var(--accent-blue)}.stat-value.balance-neg{color:var(--accent-out)}
+.stat-icon{position:absolute;top:20px;right:20px;font-size:28px;opacity:.2}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:8px}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--card-radius);padding:22px 24px}
+.card-title{font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+.card-title .badge{font-size:11px;background:var(--surface2);padding:3px 10px;border-radius:20px;color:var(--muted);font-family:var(--font-body);font-weight:400}
+.chart-bars-container{height:140px;display:flex;align-items:flex-end;gap:6px}
+.chart-col{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;height:100%;justify-content:flex-end}
+.chart-col-bars{display:flex;gap:3px;align-items:flex-end;width:100%}
+.chart-bar{flex:1;border-radius:4px 4px 0 0;transition:height .7s cubic-bezier(.4,0,.2,1)}
+.chart-bar.in{background:var(--accent-in);opacity:.85}.chart-bar.out{background:var(--accent-out);opacity:.85}
+.chart-col-label{font-size:10px;color:var(--muted)}
+.period-tabs{display:flex;gap:4px}
+.period-tab{padding:4px 12px;border-radius:6px;border:none;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:500;transition:all .2s}
+.period-tab.active{background:var(--surface2);color:var(--text)}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:10px;flex:1}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-weight:600}
+td{padding:13px 14px;font-size:13.5px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.amount-in{color:var(--accent-in);font-weight:600;font-family:var(--font-head);font-size:14px}
+.amount-out{color:var(--accent-out);font-weight:600;font-family:var(--font-head);font-size:14px}
+.cat-tag{background:var(--surface2);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--muted);border-left-width:2px;border-left-style:solid}
+.action-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:16px;transition:all .15s}
+.action-btn:hover{background:var(--surface2);color:var(--text)}
+/* REKAP HARIAN */
+.rk-table th{background:var(--surface2);text-align:center;font-size:13px;padding:14px 18px;letter-spacing:0;text-transform:none;font-weight:700;color:var(--text)}
+.rk-table th:first-child{text-align:left}
+.rk-table td{text-align:center;padding:14px 18px;font-size:14px}
+.rk-table td:first-child{text-align:left;font-weight:500}
+.rk-table .clickable-row{cursor:pointer}
+.rk-table .clickable-row:hover td{background:rgba(108,141,255,.07)!important}
+.rk-table .row-today td{background:rgba(0,229,160,.04)}
+.rk-table .saldo-pos{color:var(--accent-in);font-weight:700;font-family:var(--font-head)}
+.rk-table .saldo-neg{color:var(--accent-out);font-weight:700;font-family:var(--font-head)}
+.rk-table .val-in{color:var(--accent-in);font-weight:600;font-family:var(--font-head)}
+.rk-table .val-out{color:var(--accent-out);font-weight:600;font-family:var(--font-head)}
+.rk-table .val-zero{color:var(--muted)}
+.month-nav{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.month-nav-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 16px;cursor:pointer;font-size:18px;transition:all .2s;line-height:1}
+.month-nav-btn:hover{background:var(--surface3)}
+.month-label{font-family:var(--font-head);font-size:16px;font-weight:700;min-width:180px;text-align:center}
+/* DAILY DETAIL */
+.daily-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.daily-date-title{font-family:var(--font-head);font-size:20px;font-weight:800}
+.daily-date-title span{color:var(--accent-in)}
+.back-btn{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:9px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;font-family:var(--font-body)}
+.back-btn:hover{color:var(--text);background:var(--surface3)}
+.daily-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.detail-split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.detail-sect-title{font-family:var(--font-head);font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.detail-sect-title::after{content:'';flex:1;height:1px;background:var(--border)}
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.form-group{display:flex;flex-direction:column;gap:7px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:600}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent-in);box-shadow:0 0 0 3px rgba(0,229,160,.1)}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:80px}
+.btn{padding:12px 24px;border-radius:10px;border:none;cursor:pointer;font-family:var(--font-body);font-size:14px;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--accent-in);color:#0f0f13}.btn-primary:hover{background:#00ffb0;transform:translateY(-1px)}
+.btn-danger{background:rgba(255,92,122,.15);color:var(--accent-out);border:1px solid rgba(255,92,122,.3)}.btn-danger:hover{background:rgba(255,92,122,.25)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--surface3)}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:7px}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.section-title{font-family:var(--font-head);font-size:18px;font-weight:700}
+.section-sub{font-size:13px;color:var(--muted);margin-top:2px}
+/* SETTINGS */
+.settings-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:24px;flex-wrap:wrap}
+.settings-tab{padding:8px 16px;border-radius:7px;border:none;background:none;color:var(--muted);cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:500;transition:all .2s}
+.settings-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tags-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.tag-item{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px}
+.tag-item .remove-tag{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;transition:color .15s}
+.tag-item .remove-tag:hover{color:var(--accent-out)}
+.add-tag-row{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.add-tag-row input{flex:1;min-width:160px;max-width:260px}
+.color-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.filter-bar input,.filter-bar select{max-width:180px;padding:9px 12px;font-size:13px}
+.filter-bar input[type=text]{max-width:220px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:14px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:modalIn .2s ease}
+@keyframes modalIn{from{transform:scale(.96) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-title{font-family:var(--font-head);font-size:18px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;transition:color .15s;padding:2px}
+.modal-close:hover{color:var(--text)}
+/* TOAST */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13.5px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease,toastOut .3s ease 2.5s forwards;display:flex;align-items:center;gap:8px}
+.toast.success{border-left:3px solid var(--accent-in)}.toast.error{border-left:3px solid var(--accent-out)}
+@keyframes toastIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{to{transform:translateX(20px);opacity:0}}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
+/* FIREBASE */
+.firebase-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,160,0,.1);border:1px solid rgba(255,160,0,.3);border-radius:8px;padding:5px 12px;font-size:12px;color:#ffa000;font-weight:600}
+.firebase-dot{width:7px;height:7px;border-radius:50%;background:#ffa000;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.code-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.code-block-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--accent-yellow)}
+.code-block pre{font-family:monospace;font-size:12px;color:var(--muted);white-space:pre-wrap;line-height:1.7}
+/* RESPONSIVE */
+@media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr}.dashboard-grid,.detail-split{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.form-group.full{grid-column:1}.two-col{grid-template-columns:1fr}.daily-stats{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.sidebar-overlay{display:block;opacity:0;pointer-events:none;transition:opacity .3s}.sidebar-overlay.open{opacity:1;pointer-events:auto}.main{margin-left:0}.hamburger{display:flex}.stats-grid,.daily-stats{grid-template-columns:1fr}.content{padding:16px}.topbar{padding:0 16px}.filter-bar input,.filter-bar select{max-width:100%;flex:1}.today-badge{display:none}}
+@media(max-width:420px){.stat-value{font-size:18px}.form-actions{flex-direction:column}.btn{width:100%;justify-content:center}.section-head{flex-direction:column;align-items:flex-start}.month-nav{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">Ka<span>Novi</span></div>
+      <div class="logo-sub">Rekap Keuangan</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-group-label">Menu Utama</div>
+      <button class="nav-item active" onclick="navigate('dashboard',this)"><span class="icon">📊</span> Dashboard</button>
+      <button class="nav-item" onclick="navigate('rekap-harian',this)"><span class="icon">📅</span> Rekap Harian</button>
+      <button class="nav-item" onclick="navigate('transaksi',this)"><span class="icon">💳</span> Semua Transaksi</button>
+      <button class="nav-item" onclick="navigate('kas-masuk',this)"><span class="icon">📥</span> Kas Masuk</button>
+      <button class="nav-item" onclick="navigate('kas-keluar',this)"><span class="icon">📤</span> Kas Keluar</button>
+      <div class="nav-group-label" style="margin-top:12px">Pengaturan</div>
+      <button class="nav-item" onclick="navigate('settings',this)"><span class="icon">⚙️</span> Setup & Konfigurasi</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="nav-item" onclick="exportCSV()"><span class="icon">📋</span> Export CSV</button>
+      <button class="nav-item" onclick="exportFirebaseJSON()"><span class="icon">🔥</span> Export Firebase JSON</button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="today-badge">Hari ini: <span id="todayDisplay"></span></div>
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Tambah</button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card income"><div class="stat-label">Total Kas Masuk</div><div class="stat-value income" id="stat-income">Rp 0</div><div class="stat-icon">📥</div><div class="stat-sub" id="stat-income-count">0 transaksi</div></div>
+          <div class="stat-card expense"><div class="stat-label">Total Kas Keluar</div><div class="stat-value expense" id="stat-expense">Rp 0</div><div class="stat-icon">📤</div><div class="stat-sub" id="stat-expense-count">0 transaksi</div></div>
+          <div class="stat-card balance"><div class="stat-label">Sisa Saldo Kas</div><div class="stat-value balance-pos" id="stat-balance">Rp 0</div><div class="stat-icon">💰</div><div class="stat-sub" id="stat-balance-sub">Saldo aktif</div></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Grafik Bulanan<div class="period-tabs"><button class="period-tab active" onclick="setChartPeriod('6m',this)">6 Bln</button><button class="period-tab" onclick="setChartPeriod('3m',this)">3 Bln</button></div></div>
+            <div class="chart-bars-container" id="barChart"></div>
+            <div style="display:flex;gap:16px;margin-top:12px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div style="width:10px;height:10px;background:var(--accent-in);border-radius:2px"></div>Masuk</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div style="width:10px;height:10px;background:var(--accent-out);border-radius:2px"></div>Keluar</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Ringkasan Kategori <span class="badge" id="topKatBadge">-</span></div>
+            <div class="donut-wrap"><svg width="110" height="110" viewBox="0 0 110 110" id="donutChart" style="flex-shrink:0"></svg><div class="donut-legend" id="donutLegend"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Transaksi Terbaru <span class="badge" id="recentBadge">-</span></div>
+          <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Deskripsi</th><th>Kategori</th><th>Jenis</th><th>Tipe</th><th>Nominal</th></tr></thead><tbody id="recentTable"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- REKAP HARIAN -->
+      <div class="page" id="page-rekap-harian">
+        <div class="section-head">
+          <div><div class="section-title">Rekap Harian</div><div class="section-sub">Klik baris tanggal untuk melihat detail transaksi</div></div>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Tambah Transaksi</button>
+        </div>
+        <!-- Month Nav -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div class="month-nav">
+              <button class="month-nav-btn" onclick="changeRekapMonth(-1)">‹</button>
+              <div class="month-label" id="rekapMonthLabel">—</div>
+              <button class="month-nav-btn" onclick="changeRekapMonth(1)">›</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="rekapMonthSel" onchange="setRekapFromSel()" style="padding:8px 12px;font-size:13px"></select>
+              <select id="rekapYearSel" onchange="setRekapFromSel()" style="padding:8px 12px;font-size:13px"></select>
+              <button class="btn btn-secondary btn-sm" onclick="goRekapToday()">Hari Ini</button>
+            </div>
+          </div>
+        </div>
+        <!-- Month Stats -->
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+          <div class="stat-card income"><div class="stat-label">Total Masuk Bulan Ini</div><div class="stat-value income" id="rkIn">Rp 0</div><div class="stat-icon">📥</div></div>
+          <div class="stat-card expense"><div class="stat-label">Total Keluar Bulan Ini</div><div class="stat-value expense" id="rkOut">Rp 0</div><div class="stat-icon">📤</div></div>
+          <div class="stat-card balance"><div class="stat-label">Saldo Bulan Ini</div><div class="stat-value balance-pos" id="rkBal">Rp 0</div><div class="stat-icon">💰</div></div>
+        </div>
+        <!-- Rekap Table -->
+        <div class="card rk-table">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tanggal</th><th style="text-align:center">Nominal Masuk</th><th style="text-align:center">Nominal Keluar</th><th style="text-align:center">Saldo</th></tr></thead>
+              <tbody id="rekapTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAILY DETAIL -->
+      <div class="page" id="page-daily-detail">
+        <div class="daily-header">
+          <button class="back-btn" id="dailyBackBtn" onclick="goBackFromDetail()">← Kembali</button>
+          <div class="daily-date-title" id="dailyDateTitle">Detail <span>—</span></div>
+          <button class="btn btn-primary btn-sm" id="dailyAddBtn" onclick="openAddModalForDate()">+ Tambah</button>
+        </div>
+        <div class="daily-stats" id="dailyStats"></div>
+        <div class="detail-split">
+          <div class="card">
+            <div class="detail-sect-title" style="color:var(--accent-in)">📥 Kas Masuk</div>
+            <div class="table-wrap"><table><thead><tr><th>Deskripsi</th><th>Kategori</th><th>Jenis</th><th>Nominal</th><th></th></tr></thead><tbody id="dailyInTable"></tbody></table></div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:13px;color:var(--muted)">Total Masuk</span>
+              <span class="amount-in" id="dailyInTotal">Rp 0</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="detail-sect-title" style="color:var(--accent-out)">📤 Kas Keluar</div>
+            <div class="table-wrap"><table><thead><tr><th>Deskripsi</th><th>Kategori</th><th>Jenis</th><th>Nominal</th><th></th></tr></thead><tbody id="dailyOutTable"></tbody></table></div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:13px;color:var(--muted)">Total Keluar</span>
+              <span class="amount-out" id="dailyOutTotal">Rp 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEMUA TRANSAKSI -->
+      <div class="page" id="page-transaksi">
+        <div class="section-head">
+          <div><div class="section-title">Semua Transaksi</div><div class="section-sub">Klik tanggal untuk melihat detail hari tersebut</div></div>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Tambah Transaksi</button>
+        </div>
+        <div class="filter-bar">
+          <input type="text" id="searchAll" placeholder="🔍 Cari transaksi..." oninput="renderAllTable()">
+          <select id="filterType" onchange="renderAllTable()"><option value="">Semua Tipe</option><option value="in">Kas Masuk</option><option value="out">Kas Keluar</option></select>
+          <select id="filterKat" onchange="renderAllTable()"><option value="">Semua Kategori</option></select>
+          <input type="date" id="filterDateFrom" onchange="renderAllTable()">
+          <input type="date" id="filterDateTo" onchange="renderAllTable()">
+          <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Reset</button>
+        </div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Deskripsi</th><th>Kategori</th><th>Jenis</th><th>Tipe</th><th>Nominal</th><th></th></tr></thead><tbody id="allTable"></tbody></table></div></div>
+      </div>
+
+      <!-- KAS MASUK -->
+      <div class="page" id="page-kas-masuk">
+        <div class="section-head"><div><div class="section-title">Kas Masuk</div><div class="section-sub">Semua penerimaan kas</div></div><button class="btn btn-primary" onclick="openAddModal('in')">+ Kas Masuk</button></div>
+        <div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px">
+          <div class="stat-card income"><div class="stat-label">Total Masuk Bulan Ini</div><div class="stat-value income" id="in-month">Rp 0</div><div class="stat-icon">📅</div></div>
+          <div class="stat-card income"><div class="stat-label">Total Masuk Hari Ini</div><div class="stat-value income" id="in-today">Rp 0</div><div class="stat-icon">🌅</div></div>
+        </div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Deskripsi</th><th>Kategori</th><th>Jenis</th><th>Tipe</th><th>Nominal</th><th></th></tr></thead><tbody id="inTable"></tbody></table></div></div>
+      </div>
+
+      <!-- KAS KELUAR -->
+      <div class="page" id="page-kas-keluar">
+        <div class="section-head"><div><div class="section-title">Kas Keluar</div><div class="section-sub">Semua pengeluaran kas</div></div><button class="btn btn-primary" onclick="openAddModal('out')">+ Kas Keluar</button></div>
+        <div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px">
+          <div class="stat-card expense"><div class="stat-label">Total Keluar Bulan Ini</div><div class="stat-value expense" id="out-month">Rp 0</div><div class="stat-icon">📅</div></div>
+          <div class="stat-card expense"><div class="stat-label">Total Keluar Hari Ini</div><div class="stat-value expense" id="out-today">Rp 0</div><div class="stat-icon">🌇</div></div>
+        </div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Deskripsi</th><th>Kategori</th><th>Jenis</th><th>Tipe</th><th>Nominal</th><th></th></tr></thead><tbody id="outTable"></tbody></table></div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="section-head">
+          <div><div class="section-title">Setup &amp; Konfigurasi</div><div class="section-sub">Kelola kategori, jenis, dan tipe kas</div></div>
+          <div class="firebase-badge"><div class="firebase-dot"></div> Firebase Ready</div>
+        </div>
+        <div class="settings-tabs">
+          <button class="settings-tab active" onclick="setSettingsTab('kategori',this)">🏷️ Kategori</button>
+          <button class="settings-tab" onclick="setSettingsTab('jenis',this)">📌 Jenis Transaksi</button>
+          <button class="settings-tab" onclick="setSettingsTab('tipe',this)">🔖 Tipe Kas</button>
+          <button class="settings-tab" onclick="setSettingsTab('firebase',this)">🔥 Firebase</button>
+          <button class="settings-tab" onclick="setSettingsTab('reset',this)">🗑️ Reset</button>
+        </div>
+        <div id="tab-kategori">
+          <div class="card"><div class="card-title">Kategori Transaksi</div>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Kategori untuk mengelompokkan transaksi.</p>
+          <div class="add-tag-row"><input type="text" id="newKategori" placeholder="Nama kategori baru..." onkeydown="if(event.key==='Enter')addTag('kategori')"><input type="color" id="colorKategori" value="#6c8dff" style="width:44px;padding:4px;cursor:pointer;border-radius:8px"><button class="btn btn-primary btn-sm" onclick="addTag('kategori')">+ Tambah</button></div>
+          <div class="tags-list" id="tagList-kategori"></div></div>
+        </div>
+        <div id="tab-jenis" style="display:none">
+          <div class="card"><div class="card-title">Jenis Transaksi</div>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Contoh: Tunai, Transfer, QRIS, Kartu Kredit.</p>
+          <div class="add-tag-row"><input type="text" id="newJenis" placeholder="Jenis transaksi baru..." onkeydown="if(event.key==='Enter')addTag('jenis')"><button class="btn btn-primary btn-sm" onclick="addTag('jenis')">+ Tambah</button></div>
+          <div class="tags-list" id="tagList-jenis"></div></div>
+        </div>
+        <div id="tab-tipe" style="display:none">
+          <div class="card"><div class="card-title">Tipe Kas</div>
+          <div class="two-col" style="margin-top:8px">
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--accent-in)">📥 Tipe Kas Masuk</div>
+            <div class="add-tag-row"><input type="text" id="newTipeIn" placeholder="Tipe kas masuk..." onkeydown="if(event.key==='Enter')addTag('tipe-in')"><button class="btn btn-primary btn-sm" onclick="addTag('tipe-in')">+</button></div>
+            <div class="tags-list" id="tagList-tipe-in"></div></div>
+            <div><div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--accent-out)">📤 Tipe Kas Keluar</div>
+            <div class="add-tag-row"><input type="text" id="newTipeOut" placeholder="Tipe kas keluar..." onkeydown="if(event.key==='Enter')addTag('tipe-out')"><button class="btn btn-secondary btn-sm" onclick="addTag('tipe-out')">+</button></div>
+            <div class="tags-list" id="tagList-tipe-out"></div></div>
+          </div></div>
+        </div>
+        <div id="tab-firebase" style="display:none">
+          <div class="card">
+            <div class="card-title">🔥 Panduan Integrasi Firebase</div>
+            <div class="code-block"><div class="code-block-title">📌 Struktur Firestore Database</div>
+<pre>Collection: <span style="color:var(--accent-in)">transaksi</span>
+  Document: <span style="color:var(--accent-blue)">{auto-id}</span>
+    tanggal   : "2026-03-03"    ← string YYYY-MM-DD
+    tipeKas   : "in" | "out"
+    deskripsi : "Penjualan Produk A"
+    kategori  : "Penjualan"
+    jenis     : "Tunai"
+    tipe      : "Penjualan Produk"
+    nominal   : 2500000          ← number
+    catatan   : ""
+    createdAt : Timestamp        ← serverTimestamp()
+    updatedAt : Timestamp
+
+Collection: <span style="color:var(--accent-in)">config</span>
+  kategori → { items: [{id, nama, warna}] }
+  jenis    → { items: ["Tunai", "Transfer",...] }
+  tipeIn   → { items: ["Penjualan Produk",...] }
+  tipeOut  → { items: ["Pembelian Bahan",...] }</pre></div>
+            <div class="code-block"><div class="code-block-title">🔒 Firestore Security Rules</div>
+<pre>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /transaksi/{docId} {
+      allow read, write: if request.auth != null;
+    }
+    match /config/{docId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}</pre></div>
+            <div class="code-block"><div class="code-block-title">⚡ Query Rekap Harian (JavaScript SDK)</div>
+<pre><span style="color:var(--accent-blue)">// Query transaksi per bulan</span>
+const q = query(
+  collection(db, "transaksi"),
+  where("tanggal", ">=", "2026-03-01"),
+  where("tanggal", "<=", "2026-03-31"),
+  orderBy("tanggal", "desc")
+);
+
+<span style="color:var(--accent-blue)">// Query transaksi per hari tertentu</span>
+const qDay = query(
+  collection(db, "transaksi"),
+  where("tanggal", "==", "2026-03-03")
+);
+
+<span style="color:var(--accent-blue)">// Composite Index yang dibutuhkan:</span>
+// transaksi: tanggal ASC + tipeKas ASC</pre></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="exportFirebaseJSON()">🔥 Download Firebase JSON</button>
+              <button class="btn btn-secondary" onclick="exportCSV()">📋 Download CSV</button>
+            </div>
+          </div>
+        </div>
+        <div id="tab-reset" style="display:none">
+          <div class="card"><div class="card-title">Reset Data</div>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Hapus data atau reset konfigurasi. Tidak dapat dibatalkan.</p>
+          <div style="display:flex;flex-direction:column;gap:12px;max-width:360px">
+            <button class="btn btn-danger" onclick="resetTransaksi()">🗑️ Hapus Semua Transaksi</button>
+            <button class="btn btn-danger" onclick="resetAll()">⚠️ Reset Total (Transaksi + Konfigurasi)</button>
+          </div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modalTitle">Tambah Transaksi</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Tanggal</label><input type="date" id="f-tanggal"></div>
+      <div class="form-group"><label>Tipe Transaksi</label><select id="f-tipe-kas" onchange="updateTipeOptions()"><option value="in">📥 Kas Masuk</option><option value="out">📤 Kas Keluar</option></select></div>
+      <div class="form-group full"><label>Deskripsi Transaksi</label><input type="text" id="f-deskripsi" placeholder="Contoh: Penjualan produk A..."></div>
+      <div class="form-group"><label>Kategori</label><select id="f-kategori"></select></div>
+      <div class="form-group"><label>Jenis Transaksi</label><select id="f-jenis"></select></div>
+      <div class="form-group full"><label>Tipe Kas</label><select id="f-tipe"></select></div>
+      <div class="form-group full"><label>Nominal (Rp)</label><input type="text" id="f-nominal" placeholder="Contoh: 500.000" oninput="formatNominal(this)"></div>
+      <div class="form-group full"><label>Catatan (opsional)</label><textarea id="f-catatan" placeholder="Catatan tambahan..."></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-secondary" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="saveTransaksi()">💾 Simpan</button></div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><div class="modal-title">Hapus Transaksi</div><button class="modal-close" onclick="document.getElementById('deleteModal').classList.remove('open')">✕</button></div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px">Yakin ingin menghapus transaksi ini?</p>
+    <div class="form-actions"><button class="btn btn-secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">Batal</button><button class="btn btn-danger" onclick="confirmDelete()">🗑️ Hapus</button></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<div id="syncBadge" style="display:none;position:fixed;top:70px;right:20px;z-index:900;background:rgba(108,141,255,0.15);border:1px solid rgba(108,141,255,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#6c8dff;font-weight:600;align-items:center;gap:6px"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// ================================================================
+// FIREBASE IMPORTS & INIT
+// ================================================================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaVx7rCZcm2ZQO6tfV1qOqhQIaq172mxI",
+  authDomain: "kanoviescape.firebaseapp.com",
+  projectId: "kanoviescape",
+  storageBucket: "kanoviescape.firebasestorage.app",
+  messagingSenderId: "290231456350",
+  appId: "1:290231456350:web:9e85963a543d56afc21acf"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ================================================================
+// STATE (in-memory cache synced from Firestore)
+// ================================================================
+let state = {
+  transaksi: [],
+  kategori: [
+    {id:'k1',nama:'Penjualan',warna:'#00e5a0'},
+    {id:'k2',nama:'Pembelian',warna:'#ff5c7a'},
+    {id:'k3',nama:'Operasional',warna:'#6c8dff'},
+    {id:'k4',nama:'Lainnya',warna:'#ffd166'},
+  ],
+  jenis:   ['Tunai','Transfer Bank','QRIS','Kartu Debit','Kartu Kredit'],
+  tipeIn:  ['Penjualan Produk','Jasa','Piutang','Modal','Lainnya'],
+  tipeOut: ['Pembelian Bahan','Gaji','Biaya Operasional','Hutang','Lainnya'],
+};
+
+let rekapMonth = new Date().getMonth();
+let rekapYear  = new Date().getFullYear();
+let prevPage   = 'rekap-harian';
+let activeDetailDate = null;
+let editId = null, deleteId = null, chartPeriod = '6m';
+let unsubTransaksi = null;
+
+// ================================================================
+// FIREBASE — CONFIG (kategori / jenis / tipeIn / tipeOut)
+// ================================================================
+async function loadConfig() {
+  const keys = ['kategori','jenis','tipeIn','tipeOut'];
+  for (const key of keys) {
+    try {
+      const snap = await db.collection('config').doc(key).get();
+      if (snap.exists) {
+        state[key] = snap.data().items;
+      } else {
+        await db.collection('config').doc(key).set({ items: state[key] });
+      }
+    } catch(e) { console.warn('loadConfig', key, e); }
+  }
+}
+
+async function saveConfig(key) {
+  try {
+    await db.collection('config').doc(key).set({ items: state[key] });
+  } catch(e) {
+    toast('Gagal simpan konfigurasi','error');
+  }
+}
+
+// ================================================================
+// FIREBASE — TRANSAKSI (realtime listener)
+// ================================================================
+function listenTransaksi() {
+  if (unsubTransaksi) unsubTransaksi();
+  setSyncBadge(true);
+  const q = db.collection('transaksi').orderBy('tanggal','desc');
+  unsubTransaksi = q.onSnapshot(snap => {
+    state.transaksi = snap.docs.map(d => {
+      const v = d.data();
+      const ts2str = ts => (ts && ts.toDate) ? ts.toDate().toISOString() : (ts||'');
+      return {
+        id:        d.id,
+        tanggal:   v.tanggal   || '',
+        tipeKas:   v.tipeKas   || 'in',
+        deskripsi: v.deskripsi || '',
+        kategori:  v.kategori  || '',
+        jenis:     v.jenis     || '',
+        tipe:      v.tipe      || '',
+        nominal:   v.nominal   || 0,
+        catatan:   v.catatan   || '',
+        createdAt: ts2str(v.createdAt),
+        updatedAt: ts2str(v.updatedAt),
+      };
+    });
+    setSyncBadge(false);
+    refreshCurrentPage();
+  }, (err) => {
+    setSyncBadge(false);
+    console.error('Firestore listener:', err);
+    toast('Koneksi Firebase bermasalah','error');
+  });
+}
+
+async function fbAddTransaksi(payload) {
+  payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+  payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+  return await addDoc(collection(db, 'transaksi'), payload);
+}
+
+async function fbUpdateTransaksi(id, payload) {
+  payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+  return await updateDoc(doc(db, 'transaksi', id), payload);
+}
+
+async function fbDeleteTransaksi(id) {
+  return await deleteDoc(doc(db, 'transaksi', id));
+}
+
+function setSyncBadge(loading) {
+  const el = document.getElementById('syncBadge');
+  if (!el) return;
+  el.style.display = loading ? 'flex' : 'none';
+  el.textContent = loading ? '⏳ Syncing...' : '';
+}
+
+// Legacy stubs (not used)
+function loadState(){}
+function saveState(){}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function fmt(n){return 'Rp '+Number(n).toLocaleString('id-ID');}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function fmtDate(d){if(!d)return'-';return new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtDateFull(d){if(!d)return'-';return new Date(d+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
+function formatNominal(input){let v=input.value.replace(/\D/g,'');input.value=v?Number(v).toLocaleString('id-ID'):'';}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function navigate(page,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(btn)btn.classList.add('active');
+  const titles={dashboard:'Dashboard','rekap-harian':'Rekap Harian',transaksi:'Semua Transaksi','kas-masuk':'Kas Masuk','kas-keluar':'Kas Keluar',settings:'Pengaturan','daily-detail':'Detail Harian'};
+  document.getElementById('topbarTitle').textContent=titles[page]||page;
+  closeSidebar();
+  if(page==='dashboard')renderDashboard();
+  else if(page==='rekap-harian')renderRekapHarian();
+  else if(page==='transaksi'){renderAllTable();populateFilterKat();}
+  else if(page==='kas-masuk')renderInPage();
+  else if(page==='kas-keluar')renderOutPage();
+  else if(page==='settings')renderSettings();
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');}
+
+// ================================================================
+// REKAP HARIAN PAGE
+// ================================================================
+const MONTHS_ID=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+function populateRekapSelects(){
+  const mSel=document.getElementById('rekapMonthSel');
+  mSel.innerHTML=MONTHS_ID.map((m,i)=>`<option value="${i}"${i===rekapMonth?' selected':''}>${m}</option>`).join('');
+  const ySel=document.getElementById('rekapYearSel');
+  const y=new Date().getFullYear();
+  ySel.innerHTML=[y-2,y-1,y,y+1].map(yr=>`<option value="${yr}"${yr===rekapYear?' selected':''}>${yr}</option>`).join('');
+}
+
+function setRekapFromSel(){
+  rekapMonth=parseInt(document.getElementById('rekapMonthSel').value);
+  rekapYear=parseInt(document.getElementById('rekapYearSel').value);
+  renderRekapHarian();
+}
+
+function changeRekapMonth(dir){
+  rekapMonth+=dir;
+  if(rekapMonth>11){rekapMonth=0;rekapYear++;}
+  if(rekapMonth<0){rekapMonth=11;rekapYear--;}
+  renderRekapHarian();
+}
+
+function goRekapToday(){
+  const n=new Date(); rekapMonth=n.getMonth(); rekapYear=n.getFullYear();
+  renderRekapHarian();
+}
+
+function renderRekapHarian(){
+  populateRekapSelects();
+  document.getElementById('rekapMonthLabel').textContent=`${MONTHS_ID[rekapMonth]} ${rekapYear}`;
+  const monthStr=`${rekapYear}-${String(rekapMonth+1).padStart(2,'0')}`;
+  const today=todayStr();
+
+  // Aggregate by day
+  const days={};
+  state.transaksi.forEach(t=>{
+    if(!t.tanggal.startsWith(monthStr))return;
+    if(!days[t.tanggal])days[t.tanggal]={in:0,out:0};
+    if(t.tipeKas==='in')days[t.tanggal].in+=t.nominal;
+    else days[t.tanggal].out+=t.nominal;
+  });
+
+  const sortedDates=Object.keys(days).sort((a,b)=>b.localeCompare(a));
+
+  // Month totals
+  const mIn=sortedDates.reduce((s,d)=>s+days[d].in,0);
+  const mOut=sortedDates.reduce((s,d)=>s+days[d].out,0);
+  const mBal=mIn-mOut;
+  document.getElementById('rkIn').textContent=fmt(mIn);
+  document.getElementById('rkOut').textContent=fmt(mOut);
+  const balEl=document.getElementById('rkBal');
+  balEl.textContent=fmt(Math.abs(mBal));
+  balEl.className='stat-value '+(mBal>=0?'balance-pos':'balance-neg');
+
+  // Cumulative saldo per date (running from oldest)
+  const allDates=[...new Set(state.transaksi.map(t=>t.tanggal))].sort();
+  const cumulMap={};
+  let running=0;
+  allDates.forEach(d=>{
+    const dIn=state.transaksi.filter(t=>t.tanggal===d&&t.tipeKas==='in').reduce((s,t)=>s+t.nominal,0);
+    const dOut=state.transaksi.filter(t=>t.tanggal===d&&t.tipeKas==='out').reduce((s,t)=>s+t.nominal,0);
+    running+=dIn-dOut;
+    cumulMap[d]=running;
+  });
+
+  const tbody=document.getElementById('rekapTable');
+  if(!sortedDates.length){
+    tbody.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada transaksi di ${MONTHS_ID[rekapMonth]} ${rekapYear}</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML=sortedDates.map(d=>{
+    const row=days[d];
+    const saldo=cumulMap[d]||0;
+    const isToday=d===today;
+    const inH=row.in>0?`<span class="val-in">${fmt(row.in)}</span>`:`<span class="val-zero">Rp0</span>`;
+    const outH=row.out>0?`<span class="val-out">${fmt(row.out)}</span>`:`<span class="val-zero">Rp0</span>`;
+    const salH=`<span class="${saldo>=0?'saldo-pos':'saldo-neg'}">${fmt(saldo)}</span>`;
+    return `<tr class="clickable-row${isToday?' row-today':''}" onclick="openDailyDetail('${d}','rekap-harian')">
+      <td>${fmtDate(d)}${isToday?' <span style="font-size:10px;background:rgba(0,229,160,.15);color:var(--accent-in);padding:2px 8px;border-radius:4px;margin-left:6px;font-weight:700">Hari Ini</span>':''}</td>
+      <td style="text-align:center">${inH}</td>
+      <td style="text-align:center">${outH}</td>
+      <td style="text-align:center">${salH}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ================================================================
+// DAILY DETAIL PAGE
+// ================================================================
+function openDailyDetail(dateStr, from){
+  prevPage=from||'rekap-harian';
+  activeDetailDate=dateStr;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-daily-detail').classList.add('active');
+  document.getElementById('topbarTitle').textContent='Detail Harian';
+  document.getElementById('dailyBackBtn').textContent=`← ${prevPage==='rekap-harian'?'Rekap Harian':'Transaksi'}`;
+  closeSidebar();
+  renderDailyDetail(dateStr);
+}
+
+function renderDailyDetail(dateStr){
+  const txns=state.transaksi.filter(t=>t.tanggal===dateStr);
+  const ins=txns.filter(t=>t.tipeKas==='in');
+  const outs=txns.filter(t=>t.tipeKas==='out');
+  const totalIn=ins.reduce((s,t)=>s+t.nominal,0);
+  const totalOut=outs.reduce((s,t)=>s+t.nominal,0);
+  const saldo=totalIn-totalOut;
+
+  document.getElementById('dailyDateTitle').innerHTML=`Detail <span>${fmtDateFull(dateStr)}</span>`;
+  document.getElementById('dailyInTotal').textContent=fmt(totalIn);
+  document.getElementById('dailyOutTotal').textContent=fmt(totalOut);
+
+  document.getElementById('dailyStats').innerHTML=`
+    <div class="stat-card income"><div class="stat-label">Total Masuk</div><div class="stat-value income">${fmt(totalIn)}</div><div class="stat-icon">📥</div><div class="stat-sub">${ins.length} transaksi</div></div>
+    <div class="stat-card expense"><div class="stat-label">Total Keluar</div><div class="stat-value expense">${fmt(totalOut)}</div><div class="stat-icon">📤</div><div class="stat-sub">${outs.length} transaksi</div></div>
+    <div class="stat-card balance"><div class="stat-label">Saldo Hari Ini</div><div class="stat-value ${saldo>=0?'balance-pos':'balance-neg'}">${fmt(Math.abs(saldo))}</div><div class="stat-icon">💰</div><div class="stat-sub">${saldo>=0?'Surplus ✓':'Defisit ⚠️'}</div></div>
+  `;
+
+  const noRow=(msg)=>`<tr><td colspan="5"><div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">${msg}</div></td></tr>`;
+  document.getElementById('dailyInTable').innerHTML=ins.length?ins.map(t=>dailyRowHTML(t)).join(''):noRow('Tidak ada kas masuk');
+  document.getElementById('dailyOutTable').innerHTML=outs.length?outs.map(t=>dailyRowHTML(t)).join(''):noRow('Tidak ada kas keluar');
+}
+
+function dailyRowHTML(t){
+  const isIn=t.tipeKas==='in';
+  const katColor=state.kategori.find(k=>k.nama===t.kategori)?.warna||'#7a7a9a';
+  return `<tr>
+    <td><div style="font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.deskripsi}">${t.deskripsi}</div>${t.catatan?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${t.catatan}</div>`:''}</td>
+    <td><span class="cat-tag" style="border-left-color:${katColor}">${t.kategori||'-'}</span></td>
+    <td style="font-size:12px;color:var(--muted);white-space:nowrap">${t.jenis||'-'}</td>
+    <td class="${isIn?'amount-in':'amount-out'}" style="white-space:nowrap">${fmt(t.nominal)}</td>
+    <td><button class="action-btn" onclick="openEditModal('${t.id}')" title="Edit">✏️</button><button class="action-btn" onclick="askDelete('${t.id}')" title="Hapus">🗑️</button></td>
+  </tr>`;
+}
+
+function goBackFromDetail(){
+  const navBtn=document.querySelector(`[onclick="navigate('${prevPage}',this)"]`);
+  navigate(prevPage,navBtn);
+}
+
+function openAddModalForDate(){
+  openAddModal();
+  if(activeDetailDate) document.getElementById('f-tanggal').value=activeDetailDate;
+}
+
+// ================================================================
+// MODAL
+// ================================================================
+function openAddModal(type){
+  editId=null;
+  document.getElementById('modalTitle').textContent='Tambah Transaksi';
+  document.getElementById('f-tanggal').value=todayStr();
+  document.getElementById('f-tipe-kas').value=type==='out'?'out':'in';
+  document.getElementById('f-deskripsi').value='';
+  document.getElementById('f-nominal').value='';
+  document.getElementById('f-catatan').value='';
+  populateModalSelects(); updateTipeOptions();
+  document.getElementById('addModal').classList.add('open');
+  setTimeout(()=>document.getElementById('f-deskripsi').focus(),100);
+}
+
+function openEditModal(id){
+  const t=state.transaksi.find(x=>x.id===id); if(!t)return;
+  editId=id;
+  document.getElementById('modalTitle').textContent='Edit Transaksi';
+  document.getElementById('f-tanggal').value=t.tanggal;
+  document.getElementById('f-tipe-kas').value=t.tipeKas;
+  document.getElementById('f-deskripsi').value=t.deskripsi;
+  document.getElementById('f-catatan').value=t.catatan||'';
+  document.getElementById('f-nominal').value=Number(t.nominal).toLocaleString('id-ID');
+  populateModalSelects(); updateTipeOptions();
+  setTimeout(()=>{
+    document.getElementById('f-kategori').value=t.kategori||'';
+    document.getElementById('f-jenis').value=t.jenis||'';
+    document.getElementById('f-tipe').value=t.tipe||'';
+  },10);
+  document.getElementById('addModal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('addModal').classList.remove('open');editId=null;}
+
+function populateModalSelects(){
+  document.getElementById('f-kategori').innerHTML='<option value="">-- Pilih Kategori --</option>'+state.kategori.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('');
+  document.getElementById('f-jenis').innerHTML='<option value="">-- Pilih Jenis --</option>'+state.jenis.map(j=>`<option value="${j}">${j}</option>`).join('');
+}
+
+function updateTipeOptions(){
+  const isIn=document.getElementById('f-tipe-kas').value==='in';
+  document.getElementById('f-tipe').innerHTML='<option value="">-- Pilih Tipe --</option>'+(isIn?state.tipeIn:state.tipeOut).map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+
+// ================================================================
+// SAVE TRANSAKSI
+// ================================================================
+async function saveTransaksi(){
+  const tanggal=document.getElementById('f-tanggal').value;
+  const tipeKas=document.getElementById('f-tipe-kas').value;
+  const deskripsi=document.getElementById('f-deskripsi').value.trim();
+  const kategori=document.getElementById('f-kategori').value;
+  const jenis=document.getElementById('f-jenis').value;
+  const tipe=document.getElementById('f-tipe').value;
+  const nominalRaw=document.getElementById('f-nominal').value.replace(/\D/g,'');
+  const nominal=parseInt(nominalRaw)||0;
+  const catatan=document.getElementById('f-catatan').value.trim();
+  if(!tanggal)return toast('Pilih tanggal!','error');
+  if(!deskripsi)return toast('Isi deskripsi transaksi!','error');
+  if(!nominal||nominal<=0)return toast('Masukkan nominal yang valid!','error');
+
+  const payload = { tanggal, tipeKas, deskripsi, kategori, jenis, tipe, nominal, catatan };
+  const btn = document.querySelector('#addModal .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Menyimpan...';}
+  try {
+    if(editId){
+      await fbUpdateTransaksi(editId, payload);
+      toast('Transaksi berhasil diperbarui ✓','success');
+    }else{
+      await fbAddTransaksi(payload);
+      toast('Transaksi berhasil disimpan ✓','success');
+    }
+    closeModal();
+  } catch(e) {
+    console.error('saveTransaksi:', e);
+    toast('Gagal menyimpan transaksi','error');
+  } finally {
+    if(btn){btn.disabled=false;btn.textContent='💾 Simpan';}
+  }
+}
+
+function refreshCurrentPage(){
+  const id=document.querySelector('.page.active')?.id;
+  if(id==='page-dashboard')renderDashboard();
+  else if(id==='page-rekap-harian')renderRekapHarian();
+  else if(id==='page-transaksi')renderAllTable();
+  else if(id==='page-kas-masuk')renderInPage();
+  else if(id==='page-kas-keluar')renderOutPage();
+  else if(id==='page-daily-detail'&&activeDetailDate)renderDailyDetail(activeDetailDate);
+}
+
+// ================================================================
+// DELETE
+// ================================================================
+function askDelete(id){deleteId=id;document.getElementById('deleteModal').classList.add('open');}
+async function confirmDelete(){
+  if(!deleteId)return;
+  const idToDelete=deleteId;
+  deleteId=null;
+  document.getElementById('deleteModal').classList.remove('open');
+  try {
+    await fbDeleteTransaksi(idToDelete);
+    toast('Transaksi dihapus','success');
+  } catch(e) {
+    console.error('confirmDelete:', e);
+    toast('Gagal menghapus transaksi','error');
+  }
+}
+
+// ================================================================
+// DASHBOARD
+// ================================================================
+function renderDashboard(){
+  const all=state.transaksi;
+  const tIn=all.filter(t=>t.tipeKas==='in').reduce((s,t)=>s+t.nominal,0);
+  const tOut=all.filter(t=>t.tipeKas==='out').reduce((s,t)=>s+t.nominal,0);
+  const bal=tIn-tOut;
+  document.getElementById('stat-income').textContent=fmt(tIn);
+  document.getElementById('stat-expense').textContent=fmt(tOut);
+  document.getElementById('stat-balance').textContent=fmt(Math.abs(bal));
+  document.getElementById('stat-balance').className='stat-value '+(bal>=0?'balance-pos':'balance-neg');
+  document.getElementById('stat-income-count').textContent=all.filter(t=>t.tipeKas==='in').length+' transaksi';
+  document.getElementById('stat-expense-count').textContent=all.filter(t=>t.tipeKas==='out').length+' transaksi';
+  document.getElementById('stat-balance-sub').textContent=bal>=0?'Saldo positif ✓':'⚠️ Saldo defisit';
+  renderBarChart(); renderDonut(); renderRecentTable();
+}
+
+function setChartPeriod(p,btn){chartPeriod=p;document.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderBarChart();}
+
+function renderBarChart(){
+  const months=chartPeriod==='6m'?6:3;
+  const data=[];
+  const now=new Date();
+  for(let i=months-1;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const m=d.getMonth(),y=d.getFullYear();
+    const label=d.toLocaleDateString('id-ID',{month:'short'});
+    const tIn=state.transaksi.filter(t=>{const td=new Date(t.tanggal+'T00:00:00');return t.tipeKas==='in'&&td.getMonth()===m&&td.getFullYear()===y;}).reduce((s,t)=>s+t.nominal,0);
+    const tOut=state.transaksi.filter(t=>{const td=new Date(t.tanggal+'T00:00:00');return t.tipeKas==='out'&&td.getMonth()===m&&td.getFullYear()===y;}).reduce((s,t)=>s+t.nominal,0);
+    data.push({label,tIn,tOut});
+  }
+  const maxVal=Math.max(...data.flatMap(d=>[d.tIn,d.tOut]),1);
+  document.getElementById('barChart').innerHTML=data.map(d=>{
+    const hIn=Math.round((d.tIn/maxVal)*120),hOut=Math.round((d.tOut/maxVal)*120);
+    return `<div class="chart-col"><div class="chart-col-bars"><div class="chart-bar in" title="${fmt(d.tIn)}" style="height:${hIn||2}px"></div><div class="chart-bar out" title="${fmt(d.tOut)}" style="height:${hOut||2}px"></div></div><div class="chart-col-label">${d.label}</div></div>`;
+  }).join('');
+}
+
+function renderDonut(){
+  const catData={};
+  state.transaksi.forEach(t=>{catData[t.kategori||'Tanpa Kategori']=(catData[t.kategori||'Tanpa Kategori']||0)+t.nominal;});
+  const entries=Object.entries(catData).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const total=entries.reduce((s,e)=>s+e[1],0)||1;
+  const colors=['#00e5a0','#6c8dff','#ff5c7a','#ffd166','#a78bfa'];
+  const svg=document.getElementById('donutChart'),legend=document.getElementById('donutLegend');
+  if(!entries.length){svg.innerHTML='';legend.innerHTML='<div style="color:var(--muted);font-size:13px">Belum ada data</div>';document.getElementById('topKatBadge').textContent='-';return;}
+  let start=-Math.PI/2;const cx=55,cy=55,r=40,ir=25;let paths='';
+  entries.forEach((e,i)=>{
+    const angle=(e[1]/total)*2*Math.PI,end=start+angle;
+    const x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start),x2=cx+r*Math.cos(end),y2=cy+r*Math.sin(end);
+    const ix1=cx+ir*Math.cos(start),iy1=cy+ir*Math.sin(start),ix2=cx+ir*Math.cos(end),iy2=cy+ir*Math.sin(end);
+    const large=angle>Math.PI?1:0;
+    paths+=`<path d="M${ix1},${iy1} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} L${ix2},${iy2} A${ir},${ir} 0 ${large},0 ${ix1},${iy1}" fill="${colors[i%colors.length]}" opacity=".9"><title>${e[0]}: ${fmt(e[1])}</title></path>`;
+    start=end;
+  });
+  svg.innerHTML=paths;
+  legend.innerHTML=entries.slice(0,4).map((e,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${colors[i%colors.length]}"></div><span style="font-size:12px;flex:1">${e[0]||'Lainnya'}</span><span style="font-size:12px;color:var(--muted)">${Math.round(e[1]/total*100)}%</span></div>`).join('');
+  document.getElementById('topKatBadge').textContent=entries.length+' kategori';
+}
+
+function renderRecentTable(){
+  const recent=[...state.transaksi].sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).slice(0,10);
+  document.getElementById('recentTable').innerHTML=recent.length?recent.map(t=>rowHTML(t,false)).join(''):emptyRow(6);
+  document.getElementById('recentBadge').textContent=recent.length+' terakhir';
+}
+
+// ================================================================
+// TABLE ROWS
+// ================================================================
+function rowHTML(t,actions=true){
+  const isIn=t.tipeKas==='in';
+  const katColor=state.kategori.find(k=>k.nama===t.kategori)?.warna||'#7a7a9a';
+  return `<tr>
+    <td style="white-space:nowrap;cursor:pointer" onclick="openDailyDetail('${t.tanggal}','transaksi')" title="Lihat detail ${fmtDate(t.tanggal)}">${fmtDate(t.tanggal)}</td>
+    <td><div style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.deskripsi}">${t.deskripsi}</div>${t.catatan?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${t.catatan}</div>`:''}</td>
+    <td><span class="cat-tag" style="border-left-color:${katColor}">${t.kategori||'-'}</span></td>
+    <td style="white-space:nowrap">${t.jenis||'-'}</td>
+    <td style="font-size:12px;color:var(--muted)">${t.tipe||'-'}</td>
+    <td class="${isIn?'amount-in':'amount-out'}" style="white-space:nowrap">${isIn?'+':'-'}${fmt(t.nominal)}</td>
+    ${actions?`<td><button class="action-btn" onclick="openEditModal('${t.id}')" title="Edit">✏️</button><button class="action-btn" onclick="askDelete('${t.id}')" title="Hapus">🗑️</button></td>`:''}
+  </tr>`;
+}
+function emptyRow(cols){return`<tr><td colspan="${cols}"><div class="empty-state"><div class="icon">📭</div><p>Belum ada transaksi</p></div></td></tr>`;}
+
+// ================================================================
+// ALL / IN / OUT TABLES
+// ================================================================
+function renderAllTable(){
+  const search=(document.getElementById('searchAll')?.value||'').toLowerCase();
+  const ft=document.getElementById('filterType')?.value||'';
+  const fk=document.getElementById('filterKat')?.value||'';
+  const df=document.getElementById('filterDateFrom')?.value||'';
+  const dt=document.getElementById('filterDateTo')?.value||'';
+  let data=[...state.transaksi].sort((a,b)=>b.tanggal.localeCompare(a.tanggal));
+  if(search)data=data.filter(t=>t.deskripsi.toLowerCase().includes(search)||(t.kategori||'').toLowerCase().includes(search)||(t.jenis||'').toLowerCase().includes(search));
+  if(ft)data=data.filter(t=>t.tipeKas===ft);
+  if(fk)data=data.filter(t=>t.kategori===fk);
+  if(df)data=data.filter(t=>t.tanggal>=df);
+  if(dt)data=data.filter(t=>t.tanggal<=dt);
+  document.getElementById('allTable').innerHTML=data.length?data.map(t=>rowHTML(t,true)).join(''):emptyRow(7);
+}
+function populateFilterKat(){
+  const sel=document.getElementById('filterKat');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Semua Kategori</option>'+state.kategori.map(k=>`<option value="${k.nama}">${k.nama}</option>`).join('');
+  sel.value=cur;
+}
+function clearFilters(){['searchAll','filterType','filterKat','filterDateFrom','filterDateTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});renderAllTable();}
+function renderInPage(){
+  const all=state.transaksi.filter(t=>t.tipeKas==='in').sort((a,b)=>b.tanggal.localeCompare(a.tanggal));
+  const today=todayStr(),thisMonth=today.slice(0,7);
+  document.getElementById('in-today').textContent=fmt(all.filter(t=>t.tanggal===today).reduce((s,t)=>s+t.nominal,0));
+  document.getElementById('in-month').textContent=fmt(all.filter(t=>t.tanggal.startsWith(thisMonth)).reduce((s,t)=>s+t.nominal,0));
+  document.getElementById('inTable').innerHTML=all.length?all.map(t=>rowHTML(t,true)).join(''):emptyRow(7);
+}
+function renderOutPage(){
+  const all=state.transaksi.filter(t=>t.tipeKas==='out').sort((a,b)=>b.tanggal.localeCompare(a.tanggal));
+  const today=todayStr(),thisMonth=today.slice(0,7);
+  document.getElementById('out-today').textContent=fmt(all.filter(t=>t.tanggal===today).reduce((s,t)=>s+t.nominal,0));
+  document.getElementById('out-month').textContent=fmt(all.filter(t=>t.tanggal.startsWith(thisMonth)).reduce((s,t)=>s+t.nominal,0));
+  document.getElementById('outTable').innerHTML=all.length?all.map(t=>rowHTML(t,true)).join(''):emptyRow(7);
+}
+
+// ================================================================
+// SETTINGS
+// ================================================================
+function setSettingsTab(tab,btn){
+  ['kategori','jenis','tipe','firebase','reset'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display='none';});
+  document.querySelectorAll('.settings-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).style.display='block';btn.classList.add('active');
+}
+function renderSettings(){renderTagList('kategori');renderTagList('jenis');renderTagList('tipe-in');renderTagList('tipe-out');}
+function renderTagList(type){
+  const el=document.getElementById('tagList-'+type);if(!el)return;
+  const items=type==='kategori'?state.kategori:type==='jenis'?state.jenis:type==='tipe-in'?state.tipeIn:state.tipeOut;
+  if(type==='kategori')el.innerHTML=items.map(k=>`<div class="tag-item"><div class="color-dot" style="background:${k.warna}"></div>${k.nama}<button class="remove-tag" onclick="removeTag('kategori','${k.id}')">×</button></div>`).join('');
+  else el.innerHTML=items.map((item,i)=>`<div class="tag-item">${item}<button class="remove-tag" onclick="removeTag('${type}',${i})">×</button></div>`).join('');
+}
+const CFG_KEY={'kategori':'kategori','jenis':'jenis','tipe-in':'tipeIn','tipe-out':'tipeOut'};
+async function addTag(type){
+  const elMap={'kategori':'newKategori','jenis':'newJenis','tipe-in':'newTipeIn','tipe-out':'newTipeOut'};
+  const inp=document.getElementById(elMap[type]);const val=inp?.value.trim();
+  if(!val)return toast('Isi nama terlebih dahulu','error');
+  if(type==='kategori'){const color=document.getElementById('colorKategori').value;if(state.kategori.find(k=>k.nama.toLowerCase()===val.toLowerCase()))return toast('Kategori sudah ada','error');state.kategori.push({id:uid(),nama:val,warna:color});}
+  else if(type==='jenis'){if(state.jenis.includes(val))return toast('Jenis sudah ada','error');state.jenis.push(val);}
+  else if(type==='tipe-in'){if(state.tipeIn.includes(val))return toast('Tipe sudah ada','error');state.tipeIn.push(val);}
+  else if(type==='tipe-out'){if(state.tipeOut.includes(val))return toast('Tipe sudah ada','error');state.tipeOut.push(val);}
+  inp.value='';renderTagList(type);
+  await saveConfig(CFG_KEY[type]);
+  toast('Berhasil ditambahkan ✓','success');
+}
+async function removeTag(type,idOrIdx){
+  if(type==='kategori')state.kategori=state.kategori.filter(k=>k.id!==idOrIdx);
+  else if(type==='jenis')state.jenis.splice(idOrIdx,1);
+  else if(type==='tipe-in')state.tipeIn.splice(idOrIdx,1);
+  else if(type==='tipe-out')state.tipeOut.splice(idOrIdx,1);
+  renderTagList(type);
+  await saveConfig(CFG_KEY[type]);
+}
+async function resetTransaksi(){
+  if(!confirm('Yakin hapus semua transaksi? Ini akan menghapus SEMUA data dari Firebase!'))return;
+  try {
+    setSyncBadge(true);
+    const snap=await db.collection('transaksi').get();
+    const dels=snap.docs.map(d=>d.ref.delete());
+    await Promise.all(dels);
+    toast('Semua transaksi dihapus dari Firebase','success');
+    setSyncBadge(false);
+  } catch(e){setSyncBadge(false);toast('Gagal menghapus','error');}
+}
+function resetAll(){if(!confirm('Reset TOTAL? Ini akan menghapus semua transaksi dari Firebase!'))return;resetTransaksi();}
+
+// ================================================================
+// EXPORT CSV
+// ================================================================
+function exportCSV(){
+  if(!state.transaksi.length)return toast('Tidak ada data','error');
+  const h=['id','tanggal','tipeKas','deskripsi','kategori','jenis','tipe','nominal','catatan','createdAt'];
+  const rows=state.transaksi.map(t=>h.map(k=>typeof t[k]==='string'&&t[k].includes(',')?`"${t[k]}"`:t[k]||''));
+  const csv=[h.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='kasku-'+todayStr()+'.csv';a.click();
+  toast('Export CSV berhasil ✓','success');
+}
+
+// ================================================================
+// EXPORT FIREBASE JSON (firestore-export-import compatible)
+// ================================================================
+function exportFirebaseJSON(){
+  if(!state.transaksi.length)return toast('Tidak ada data','error');
+  const out={
+    __collections__:{
+      transaksi:{},
+      config:{
+        kategori:{__data__:{items:state.kategori},__collections__:{}},
+        jenis:{__data__:{items:state.jenis},__collections__:{}},
+        tipeIn:{__data__:{items:state.tipeIn},__collections__:{}},
+        tipeOut:{__data__:{items:state.tipeOut},__collections__:{}}
+      }
+    }
+  };
+  state.transaksi.forEach(t=>{
+    out.__collections__.transaksi[t.id]={
+      __data__:{
+        tanggal:t.tanggal,
+        tipeKas:t.tipeKas,
+        deskripsi:t.deskripsi,
+        kategori:t.kategori||'',
+        jenis:t.jenis||'',
+        tipe:t.tipe||'',
+        nominal:t.nominal,
+        catatan:t.catatan||'',
+        createdAt:t.createdAt||new Date().toISOString(),
+        updatedAt:t.updatedAt||new Date().toISOString()
+      },
+      __collections__:{}
+    };
+  });
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='kasku-firebase-'+todayStr()+'.json';
+  a.click();
+  toast('Export Firebase JSON berhasil ✓ (data sudah tersimpan di Firestore)','success');
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function toast(msg,type='success'){
+  const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+async function init(){
+  const d=new Date();
+  document.getElementById('todayDisplay').textContent=d.toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+  setSyncBadge(true);
+  try {
+    await loadConfig();
+    listenTransaksi(); // starts realtime sync
+    renderDashboard();
+  } catch(e) {
+    setSyncBadge(false);
+    console.error('init error:', e);
+    toast('Gagal terhubung ke Firebase','error');
+  }
+}
+
+function seedDemo(){
+  const today=todayStr();
+  const off=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0];};
+  const now=new Date().toISOString();
+  const demo=[
+    {tipeKas:'in',deskripsi:'Penjualan Produk A',kategori:'Penjualan',jenis:'Tunai',tipe:'Penjualan Produk',nominal:2500000,tanggal:today,catatan:''},
+    {tipeKas:'in',deskripsi:'Penjualan Produk B',kategori:'Penjualan',jenis:'Transfer Bank',tipe:'Penjualan Produk',nominal:1800000,tanggal:today,catatan:''},
+    {tipeKas:'out',deskripsi:'Pembelian Bahan Baku',kategori:'Pembelian',jenis:'Transfer Bank',tipe:'Pembelian Bahan',nominal:1200000,tanggal:today,catatan:''},
+    {tipeKas:'out',deskripsi:'Biaya Listrik Kantor',kategori:'Operasional',jenis:'Transfer Bank',tipe:'Biaya Operasional',nominal:450000,tanggal:today,catatan:''},
+    {tipeKas:'in',deskripsi:'Jasa Konsultasi',kategori:'Penjualan',jenis:'QRIS',tipe:'Jasa',nominal:3000000,tanggal:off(1),catatan:''},
+    {tipeKas:'out',deskripsi:'Gaji Karyawan',kategori:'Operasional',jenis:'Transfer Bank',tipe:'Gaji',nominal:5000000,tanggal:off(2),catatan:''},
+    {tipeKas:'in',deskripsi:'Penjualan Online',kategori:'Penjualan',jenis:'Transfer Bank',tipe:'Penjualan Produk',nominal:4200000,tanggal:off(2),catatan:'Batch minggu ini'},
+    {tipeKas:'out',deskripsi:'Beli Peralatan',kategori:'Operasional',jenis:'Kartu Debit',tipe:'Biaya Operasional',nominal:875000,tanggal:off(3),catatan:''},
+    {tipeKas:'in',deskripsi:'Penjualan Retail',kategori:'Penjualan',jenis:'Tunai',tipe:'Penjualan Produk',nominal:1350000,tanggal:off(3),catatan:''},
+    {tipeKas:'out',deskripsi:'Beli Stok Baru',kategori:'Pembelian',jenis:'Transfer Bank',tipe:'Pembelian Bahan',nominal:2100000,tanggal:off(5),catatan:''},
+    {tipeKas:'in',deskripsi:'Penjualan Grosir',kategori:'Penjualan',jenis:'Transfer Bank',tipe:'Penjualan Produk',nominal:5800000,tanggal:off(5),catatan:'Order grosir'},
+    {tipeKas:'out',deskripsi:'Biaya Marketing',kategori:'Operasional',jenis:'Transfer Bank',tipe:'Biaya Operasional',nominal:650000,tanggal:off(7),catatan:''},
+    {tipeKas:'in',deskripsi:'Pendapatan Langganan',kategori:'Penjualan',jenis:'Transfer Bank',tipe:'Jasa',nominal:3600000,tanggal:off(7),catatan:'Langganan bulanan'},
+  ];
+  demo.forEach(d=>state.transaksi.push({id:uid(),createdAt:now,updatedAt:now,...d}));
+  saveState();renderDashboard();
+}
+
+init();
+</script>
+</body>
+</html>
